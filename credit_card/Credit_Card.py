@@ -21,9 +21,52 @@ class CreditCard:
         """
         self.__customer_name = customer_name  # Private attribute: cardholder’s name
         self.__bank = bank  # bank name
-        self.__account_no = account_no  # account number
+        self.__account_no = self._validate_account_no(account_no)  # account number
         self.__limit = limit  # spending limit
         self.__balance = 0  # initial balance set to 0
+
+    # Helper method for account number validation
+    def _validate_account_no(self, account_no: str):
+        """
+        Validate and clean the given account number.
+
+        Rules:
+        - Input must be a string.
+        - Spaces inside the string are removed.
+        - After cleaning, it must contain exactly 15 characters.
+        - Only digits are allowed.
+
+        Returns:
+            int: The cleaned account number as an integer.
+
+        Raises:
+            TypeError: If the input is not a string.
+            ValueError: If the account number is not exactly 15 digits long
+                        or contains non-digit characters.
+        """
+
+        # Ensure the input type is a string
+        if not isinstance(account_no, (str)):
+            raise TypeError("Account Number must be of type str")
+
+        # Remove spaces (if any) by splitting and rejoining
+        # Example: "1234 5678 9012 345" → "123456789012345"
+        split_no = account_no.split()
+        clean_account_no = "".join(split_no)
+
+        # Check that the cleaned account number has exactly 15 digits
+        if len(clean_account_no) != 15:
+            raise ValueError("Account Number must contain 15 digits of type str")
+        try:
+            # Try converting the cleaned string into an integer
+            # This ensures that the string contains digits only
+            valid_no = int(clean_account_no)
+
+            # Return the validated account number as an integer
+            return valid_no
+        except ValueError:
+            # Raised if the conversion to int fails (non-digit characters present)
+            raise ValueError("Account Number can contain digits only")
 
     # ---- Properties (read-only getters) ----
     @property

@@ -22,15 +22,15 @@ class CreditCardList:
         if not isinstance(c_card, CreditCard):
             raise TypeError("The card must be an instance of CreditCard")
 
-    def _is_duplicate_account(self, c_card: CreditCard):
+    def _is_duplicate_account(self, account_no: str):
         """
         Check for duplicate account numbers in the list.
         Raises ValueError if a duplicate is found.
         """
         for card in self:
-            if c_card.account_no == card.account_no:
+            if account_no == card.account_no:
                 raise ValueError(
-                    f"A card with account number {c_card.account_no} already exists."
+                    f"A card with account number {account_no} already exists."
                 )
 
         return False
@@ -95,7 +95,9 @@ class CreditCardList:
     def append(self, c_card: CreditCard):
         """Append a CreditCard to the end of the list."""
         self._verify_instance(c_card)  # Ensure c_card is a CreditCard
-        self._is_duplicate_account(c_card)  # Check no duplicate account numbers
+        self._is_duplicate_account(
+            c_card.account_no
+        )  # Check no duplicate account numbers
 
         temp_list = [None] * (len(self) + 1)  # Create a new list larger by 1
         for i in range(len(temp_list) - 1):
@@ -110,7 +112,7 @@ class CreditCardList:
             raise TypeError("Expects list of type CreditCard")
         for card in c_cards:
             self._verify_instance(card)  # Ensure each element is CreditCard
-            self._is_duplicate_account(card)  # Check duplicates
+            self._is_duplicate_account(card.account_no)  # Check duplicates
             self.append(card)  # Append each card using existing append logic
 
     def insert(self, index, c_card: CreditCard):
@@ -119,7 +121,7 @@ class CreditCardList:
         if valid_index > len(self) - 1:
             raise IndexError("List index out of range")
         self._verify_instance(c_card)
-        self._is_duplicate_account(c_card)
+        self._is_duplicate_account(c_card.account_no)
         temp_list = [None] * (len(self) + 1)  # New list larger by 1
         i = 0
         global_cards_index = 0  # Tracks original list position
@@ -139,17 +141,32 @@ class CreditCardList:
     def remove(self, account_no: str):
         """Remove the first CreditCard with the given account number."""
         if isinstance(account_no, str):
-            match_found = False
+            # Remove any spaces from the account number string
+            split_no = account_no.split()
+            clean_account_no = "".join(split_no)
+            try:
+                # Ensure account number contains only digits
+                valid_no = int(clean_account_no)
+            except ValueError:
+                raise ValueError("Account Number can contain digits only")
+            match_found = False  # Flag to track if a match was removed
+
+            # Make a copy of the current card list
             temp_list = [x for x in self]  # Copy existing list
-            self.__credit_cards = []  # Clear current list
+
+            # Clear the original list to rebuild it without the removed card
+            self.__credit_cards = []
+
+            # Rebuild list while skipping the first matching card
             for card in temp_list:
-                if card.account_no == account_no and not match_found:
-                    match_found = True  # Skip first matching card
-                    continue
+                if card.account_no == valid_no and not match_found:
+                    match_found = True  # Mark that we removed one match
+                    continue  # Skip appending this card
                 self.append(card)  # Append all other cards
 
+            # If no card was found with the given account number, raise error
             if not match_found:
-                raise ValueError(f"Card with AccountNo: {account_no} Not Found!")
+                raise ValueError(f"Card with AccountNo: {valid_no} Not Found!")
 
     def delete(self, index):
         """Delete the CreditCard at the specified index."""
